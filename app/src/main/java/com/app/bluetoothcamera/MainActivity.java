@@ -23,26 +23,4 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-   /* @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main, menu);
-        return true;
-    }*/
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch(item.getItemId()) {
-            case R.id.menu_toggle_log:
-                mLogShown = !mLogShown;
-                ViewAnimator output = (ViewAnimator) findViewById(R.id.sample_output);
-                if (mLogShown) {
-                    output.setDisplayedChild(1);
-                } else {
-                    output.setDisplayedChild(0);
-                }
-                supportInvalidateOptionsMenu();
-                return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
 }

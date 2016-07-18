@@ -10,21 +10,7 @@
         android:id="@+id/sample_output"
         android:layout_width="match_parent"
         android:layout_height="0px"
-        android:layout_weight="1">
-
-        <ScrollView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:paddingLeft="@dimen/horizontal_page_margin"
-                android:paddingRight="@dimen/horizontal_page_margin"
-                android:paddingTop="@dimen/vertical_page_margin"
-                android:paddingBottom="@dimen/vertical_page_margin"
-                android:text="Remote Camera" />
-        </ScrollView>
+        android:layout_weight="0.2">
 
 
     </ViewAnimator>
@@ -36,7 +22,7 @@
 
     <FrameLayout
         android:id="@+id/sample_content_fragment"
-        android:layout_weight="3"
+        android:layout_weight="8"
         android:layout_width="match_parent"
         android:layout_height="0px" />
 
