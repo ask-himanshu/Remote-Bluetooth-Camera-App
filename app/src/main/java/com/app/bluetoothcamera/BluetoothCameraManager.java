@@ -18,20 +18,20 @@ import java.io.OutputStream;
 import java.util.UUID;
 
 
-public class BluetoothCameraManager implements IActionListner{
-    
+public class BluetoothCameraManager implements ListenerInterface {
+
     private static final String TAG = "rolf";
     int len = 0;
     private static final String NAME_SECURE = "BluetoothCameraSecure";
     private static final String NAME_INSECURE = "BluetoothCameraInsecure";
 
-    
+
     private static final UUID MY_UUID_SECURE =
             UUID.fromString("fa87c0d0-afac-11de-8a39-0800200c9a66");
     private static final UUID MY_UUID_INSECURE =
             UUID.fromString("8ce255c0-200a-11e0-ac64-0800200c9a66");
 
-    
+
     private final BluetoothAdapter mAdapter;
     private final Handler mHandler;
     private AcceptThread mSecureAcceptThread;
@@ -41,43 +41,43 @@ public class BluetoothCameraManager implements IActionListner{
     private int mState;
 
 
-    public static final int STATE_NONE = 0;       
-    public static final int STATE_LISTEN = 1;     
-    public static final int STATE_CONNECTING = 2; 
-    public static final int STATE_CONNECTED = 3;  
+    public static final int STATE_NONE = 0;
+    public static final int STATE_LISTEN = 1;
+    public static final int STATE_CONNECTING = 2;
+    public static final int STATE_CONNECTED = 3;
 
-    
+
     public BluetoothCameraManager(Context context, Handler handler) {
         mAdapter = BluetoothAdapter.getDefaultAdapter();
         mState = STATE_NONE;
         mHandler = handler;
     }
 
-    
+
     private synchronized void setState(int state) {
         Log.d(TAG, "setState() " + mState + " -> " + state);
         mState = state;
 
-        
+
         mHandler.obtainMessage(Constants.MESSAGE_STATE_CHANGE, state, -1).sendToTarget();
     }
 
-    
+
     public synchronized int getState() {
         return mState;
     }
 
-    
+
     public synchronized void start() {
         Log.d(TAG, "start");
 
-        
+
         if (mConnectThread != null) {
             mConnectThread.cancel();
             mConnectThread = null;
         }
 
-        
+
         if (mConnectedThread != null) {
             mConnectedThread.cancel();
             mConnectedThread = null;
@@ -85,7 +85,7 @@ public class BluetoothCameraManager implements IActionListner{
 
         setState(STATE_LISTEN);
 
-        
+
         if (mSecureAcceptThread == null) {
             mSecureAcceptThread = new AcceptThread(true);
             mSecureAcceptThread.start();
@@ -96,11 +96,11 @@ public class BluetoothCameraManager implements IActionListner{
         }
     }
 
-    
+
     public synchronized void connect(BluetoothDevice device, boolean secure) {
         Log.d(TAG, "connect to: " + device);
 
-        
+
         if (mState == STATE_CONNECTING) {
             if (mConnectThread != null) {
                 mConnectThread.cancel();
@@ -108,36 +108,36 @@ public class BluetoothCameraManager implements IActionListner{
             }
         }
 
-        
+
         if (mConnectedThread != null) {
             mConnectedThread.cancel();
             mConnectedThread = null;
         }
 
-        
+
         mConnectThread = new ConnectThread(device, secure);
         mConnectThread.start();
         setState(STATE_CONNECTING);
     }
 
-    
+
     public synchronized void connected(BluetoothSocket socket, BluetoothDevice
             device, final String socketType) {
         Log.d(TAG, "connected, Socket Type:" + socketType);
 
-        
+
         if (mConnectThread != null) {
             mConnectThread.cancel();
             mConnectThread = null;
         }
 
-        
+
         if (mConnectedThread != null) {
             mConnectedThread.cancel();
             mConnectedThread = null;
         }
 
-        
+
         if (mSecureAcceptThread != null) {
             mSecureAcceptThread.cancel();
             mSecureAcceptThread = null;
@@ -147,11 +147,11 @@ public class BluetoothCameraManager implements IActionListner{
             mInsecureAcceptThread = null;
         }
 
-        
+
         mConnectedThread = new ConnectedThread(socket, socketType);
         mConnectedThread.start();
 
-        
+
         Message msg = mHandler.obtainMessage(Constants.MESSAGE_DEVICE_NAME);
         Bundle bundle = new Bundle();
         bundle.putString(Constants.DEVICE_NAME, device.getName());
@@ -161,7 +161,7 @@ public class BluetoothCameraManager implements IActionListner{
         setState(STATE_CONNECTED);
     }
 
-    
+
     public synchronized void stop() {
         Log.d(TAG, "stop");
 
@@ -187,41 +187,41 @@ public class BluetoothCameraManager implements IActionListner{
         setState(STATE_NONE);
     }
 
-    
+
     public void write(byte[] out) {
-        
+
         ConnectedThread r;
-        
+
         synchronized (this) {
             if (mState != STATE_CONNECTED) return;
             r = mConnectedThread;
         }
-        
+
         r.write(out);
     }
 
-    
+
     private void connectionFailed() {
-        
+
         Message msg = mHandler.obtainMessage(Constants.MESSAGE_TOAST);
         Bundle bundle = new Bundle();
         bundle.putString(Constants.TOAST, "Unable to connect device");
         msg.setData(bundle);
         mHandler.sendMessage(msg);
 
-        
+
         BluetoothCameraManager.this.start();
     }
 
-    
+
     private void connectionLost() {
-        
+
         Message msg = mHandler.obtainMessage(Constants.MESSAGE_TOAST);
         Bundle bundle = new Bundle();
         bundle.putString(Constants.TOAST, "Device connection was lost");
         msg.setData(bundle);
         mHandler.sendMessage(msg);
-        
+
         BluetoothCameraManager.this.start();
     }
 
@@ -232,7 +232,7 @@ public class BluetoothCameraManager implements IActionListner{
 
 
     private class AcceptThread extends Thread {
-        
+
         private final BluetoothServerSocket mmServerSocket;
         private String mSocketType;
 
@@ -240,7 +240,7 @@ public class BluetoothCameraManager implements IActionListner{
             BluetoothServerSocket tmp = null;
             mSocketType = secure ? "Secure" : "Insecure";
 
-            
+
             try {
                 if (secure) {
                     tmp = mAdapter.listenUsingRfcommWithServiceRecord(NAME_SECURE,
@@ -262,30 +262,30 @@ public class BluetoothCameraManager implements IActionListner{
 
             BluetoothSocket socket = null;
 
-            
+
             while (mState != STATE_CONNECTED) {
                 try {
-                    
-                    
+
+
                     socket = mmServerSocket.accept();
                 } catch (IOException e) {
                     Log.e(TAG, "Socket Type: " + mSocketType + "accept() failed", e);
                     break;
                 }
 
-                
+
                 if (socket != null) {
                     synchronized (BluetoothCameraManager.this) {
                         switch (mState) {
                             case STATE_LISTEN:
                             case STATE_CONNECTING:
-                                
+
                                 connected(socket, socket.getRemoteDevice(),
                                         mSocketType);
                                 break;
                             case STATE_NONE:
                             case STATE_CONNECTED:
-                                
+
                                 try {
                                     socket.close();
                                 } catch (IOException e) {
@@ -311,7 +311,7 @@ public class BluetoothCameraManager implements IActionListner{
     }
 
 
-    
+
     private class ConnectThread extends Thread {
         private final BluetoothSocket mmSocket;
         private final BluetoothDevice mmDevice;
@@ -343,7 +343,7 @@ public class BluetoothCameraManager implements IActionListner{
             try {
                 mmSocket.connect();
             } catch (IOException e) {
-                
+
                 try {
                     mmSocket.close();
                 } catch (IOException e2) {
@@ -354,12 +354,12 @@ public class BluetoothCameraManager implements IActionListner{
                 return;
             }
 
-            
+
             synchronized (BluetoothCameraManager.this) {
                 mConnectThread = null;
             }
 
-            
+
             connected(mmSocket, mmDevice, mSocketType);
         }
 
@@ -372,7 +372,7 @@ public class BluetoothCameraManager implements IActionListner{
         }
     }
 
-    
+
     private class ConnectedThread extends Thread {
         private final BluetoothSocket mmSocket;
         private final InputStream mmInStream;
@@ -407,7 +407,7 @@ public class BluetoothCameraManager implements IActionListner{
             int bytes;
             /*mHandler.obtainMessage(Constants.START_CAMERA_SERVICE,0, -1,0)
                     .sendToTarget();*/
-            
+
             while (true) {
                 try {
                     //Reading data written by othre device
@@ -429,12 +429,12 @@ public class BluetoothCameraManager implements IActionListner{
             }
         }
 
-        
+
         public void write(byte[] buffer) {
             try {
                 len = buffer.length;
                 mmOutStream.write(buffer);
-                
+
             } catch (IOException e) {
                 Log.e(TAG, "Exception during write", e);
             }

@@ -17,6 +17,7 @@ import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
+
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -62,12 +63,7 @@ public class BluetoothCameraFragment extends Fragment implements SurfaceHolder.C
 
 
     private static final int REQUEST_CONNECT_DEVICE_SECURE = 1;
-    private static final int REQUEST_CONNECT_DEVICE_INSECURE = 2;
     private static final int REQUEST_ENABLE_BT = 3;
-
-
-    private ListView mConversationView;
-    private EditText mOutEditText;
     private Button mSendButton;
     private ImageView imageview;
 
@@ -97,7 +93,7 @@ public class BluetoothCameraFragment extends Fragment implements SurfaceHolder.C
         if (mBluetoothAdapter == null) {
             FragmentActivity activity = getActivity();
             Toast.makeText(activity, "Bluetooth is not available", Toast.LENGTH_LONG).show();
-            activity.finish();
+            /*activity.finish();*/
         }
     }
 
@@ -111,7 +107,7 @@ public class BluetoothCameraFragment extends Fragment implements SurfaceHolder.C
             startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
 
         } else if (mCameraService == null) {
-            //setup();
+            setup();
         }
     }
 
@@ -161,7 +157,7 @@ public class BluetoothCameraFragment extends Fragment implements SurfaceHolder.C
         mSendButton.setOnClickListener(new Button.OnClickListener() {
             public void onClick(View arg0) {
                 //sendMessage("start-camera".getBytes());
-                //new IActionListner().onStartAction();
+                //new ListenerInterface().onStartAction();
                 start_camera();
             }
         });
@@ -195,7 +191,7 @@ public class BluetoothCameraFragment extends Fragment implements SurfaceHolder.C
         rawCallback = new Camera.PictureCallback() {
             public void onPictureTaken(byte[] data, Camera camera) {
                 Log.d("Log", "onPictureTaken - raw");
-               // camera.setPreviewCallback(Camera.PreviewCallback cb);
+                // camera.setPreviewCallback(Camera.PreviewCallback cb);
             }
         };
 
@@ -316,26 +312,6 @@ public class BluetoothCameraFragment extends Fragment implements SurfaceHolder.C
                 case Constants.START_CAMERA_SERVICE:
 
                     start_camera();
-                    /*byte[] readBuf = (byte[]) msg.obj;
-                    String command = new String(readBuf).toString();
-                    Log.d("cammy", "" + command);
-                    if (command.equals("start-camera")) {
-                        Log.d("cammy", "Startcam");
-                        `mera();
-                        Toast.makeText(getActivity(), "starting camera", Toast.LENGTH_LONG).show();
-
-                    } else if (command.equals("stop-camera")) {
-                        Log.d("cammy", "Stopcam");
-                        stop_camera();
-                        Toast.makeText(getActivity(), "stopping camera", Toast.LENGTH_LONG).show();
-                    } else if (command.equals("take-picture")) {
-                        Log.d("cammy", "takepic");
-                        captureImage();
-                        Toast.makeText(getActivity(), "Take picture", Toast.LENGTH_LONG).show();
-                    } else {
-                        Log.d("cammy", "No trigger");
-                    }
-*/
                     break;
                 case Constants.STOP_CAMERA:
 
@@ -346,7 +322,6 @@ public class BluetoothCameraFragment extends Fragment implements SurfaceHolder.C
                 case Constants.MESSAGE_WRITE:
 
                     mSendButton.setClickable(false);
-                    Log.d("sttatt", "writing data");
                     break;
                 case Constants.MESSAGE_READ:
 
@@ -370,67 +345,10 @@ public class BluetoothCameraFragment extends Fragment implements SurfaceHolder.C
 
                     byte[] data = (byte[]) msg.obj;
 
-                    /*final int[] rgb = decodeYUV420SP(data, 176, 144);
-
-                    Bitmap bmp = Bitmap.createBitmap(rgb, 176, 144,Bitmap.Config.ARGB_8888);
-                    imageview.setImageBitmap(bmp);*/
-
-                   /* ByteArrayOutputStream out = new ByteArrayOutputStream();
-                    YuvImage yuvImage = new YuvImage(data, ImageFormat.NV21, 75, 75, null);
-                    yuvImage.compressToJpeg(new Rect(0, 0, 75, 75), 20, out);
-                    byte[] imageBytes = out.toByteArray();
-                    Bitmap image = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);*/
-
                     Bitmap image = BitmapFactory.decodeByteArray(data, 0, data.length);
                     imageview.setImageBitmap(image);
 
-                    /*Bitmap bitmap = BitmapFactory.decodeByteArray(readBuf, 0, readBuf.length);
-
-                    if(bitmap!=null){
-                        imageview.setImageBitmap(bitmap);
-                    }else {
-                        Log.d("immgbitt","null"+bitmap);
-                    }*/
-
                     Log.d("immgbitt","Preview");
-
-                    /*if(!isCameraRunning){
-                        camera = Camera.open();
-                    }
-                    Camera.Parameters param;
-                    param = camera.getParameters();
-
-                    param.setPreviewFrameRate(10);
-                    param.setPreviewSize(176, 144);
-                    camera.setParameters(param);
-
-                    Camera.Size size = param.getPreviewSize();
-                    YuvImage image = new YuvImage(data, param .getPreviewFormat(),
-                            size.width, size.height, null);
-                    File file = new File(Environment.getExternalStorageDirectory(), "out"+System.currentTimeMillis()+".jpg");
-                    FileOutputStream filecon = null;
-                    try {
-                        filecon = new FileOutputStream(file);
-                    } catch (FileNotFoundException e) {
-                        e.printStackTrace();
-                    }
-                    image.compressToJpeg(
-                            new Rect(0, 0, image.getWidth(), image.getHeight()), 90,
-                            filecon);
-                    Picasso.with(getActivity()).load(file).
-                            error(R.drawable.ic_launcher)
-                            .into(imageview);*/
-
-                    /*Log.d("cam_pree",""+readBuf.toString());
-                    Bitmap bmp;
-                    BitmapFactory.Options options = new BitmapFactory.Options();
-                    options.inMutable = true;
-                    bmp = BitmapFactory.decodeByteArray(readBuf, 0, readBuf.length, options);
-                    Canvas canvas = surfaceHolder.lockCanvas();
-                    if (canvas != null) {
-                        canvas.drawBitmap(bmp, 0, 0, null);
-                        surfaceHolder.unlockCanvasAndPost(canvas);
-                    }*/
                     break;
             }
         }
